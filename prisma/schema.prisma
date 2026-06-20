@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Business {
+  id            String             @id @default(uuid())
+  instagram_url String
+  username      String             @unique
+  business_name String
+  bio           String?
+  followers     String?
+  following     String?
+  website       String?
+  phone         String?
+  email         String?
+  address       String?
+  industry      String?
+  posts_count   String?
+  created_at    DateTime           @default(now())
+  updated_at    DateTime           @updatedAt
+  posts         Post[]
+  services      Service[]
+  ai_contents   GeneratedContent[]
+}
+
+model Post {
+  id          String   @id @default(uuid())
+  business_id String
+  post_url    String?
+  caption     String?
+  likes       Int      @default(0)
+  comments    Int      @default(0)
+  posted_at   DateTime @default(now())
+  media_type  String?
+  media_url   String?
+  business    Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  business_id String
+  name        String
+  description String?
+  confidence  Float?
+  business    Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+}
+
+model GeneratedContent {
+  id          String   @id @default(uuid())
+  business_id String
+  type        String   // e.g. "copy", "services", "faqs", "seo", "testimonials", "gbp"
+  content     String
+  created_at  DateTime @default(now())
+  business    Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+}
+

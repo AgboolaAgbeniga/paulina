@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core Design Tokens */
+  --canvas: #090909;
+  --s1: #141414;
+  --s2: #1c1c1c;
+  --hair: #262626;
+  --hair-soft: #1a1a1a;
+  --ink: #ffffff;
+  --ink-muted: #999999;
+  --blue: #0099ff;
+  --magenta: #d44df0;
+  --violet: #6a4cf5;
+  --orange: #ff7a3d;
+  --coral: #ff5577;
+  --green: #22c55e;
+
+  /* Aliases for Dashboard Compatibility */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-text-primary: var(--ink);
+  --color-text-secondary: var(--ink-muted);
+  --color-text-tertiary: #666666;
+  --color-text-info: var(--blue);
+  --color-text-success: var(--green);
+  --color-background-primary: var(--canvas);
+  --color-background-secondary: var(--s1);
+  --color-background-info: rgba(0, 153, 255, 0.15);
+  --color-background-success: rgba(34, 197, 94, 0.15);
+  --color-border-primary: var(--hair);
+  --color-border-secondary: var(--hair-soft);
+  --color-border-tertiary: var(--hair-soft);
+  --border-radius-lg: 15px;
+  --border-radius-md: 10px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@theme {
+  --color-canvas: var(--canvas);
+  --color-s1: var(--s1);
+  --color-s2: var(--s2);
+  --color-hair: var(--hair);
+  --color-hair-soft: var(--hair-soft);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-blue: var(--blue);
+  --color-magenta: var(--magenta);
+  --color-violet: var(--violet);
+  --color-orange: var(--orange);
+  --color-coral: var(--coral);
+  --color-green: var(--green);
+
+  --font-display: "GT Walsheim Medium", "Mona Sans", "Inter", sans-serif;
+  --font-body: "Inter Variable", "Inter", sans-serif;
+
+  --spacing-hair: 1px;
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+  --spacing-xl: 30px;
+  --spacing-xxl: 40px;
+  --spacing-section: 96px;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 15px;
+  --radius-xl: 20px;
+  --radius-xxl: 30px;
+  --radius-pill: 100px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.30;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
+/* ─── TYPOGRAPHY EXTRA UTILITIES ─── */
+.disp-xl {
+  font-size: clamp(48px, 8vw, 88px);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -4.25px;
+  font-feature-settings: "cv05" 1, "cv11" 1, "ss03" 1;
+}
+
+.disp-lg {
+  font-size: clamp(36px, 5.5vw, 62px);
+  font-weight: 500;
+  line-height: 1.00;
+  letter-spacing: -3.1px;
+  font-feature-settings: "cv05" 1, "cv11" 1;
+}
+
+.disp-md {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 500;
+  line-height: 1.13;
+  letter-spacing: -1.0px;
+}
+
+.headline {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.20;
+  letter-spacing: -0.8px;
+  font-feature-settings: "cv05" 1;
+}
+
+.subhead {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.30;
+  letter-spacing: -0.01px;
+  font-feature-settings: "cv11" 1;
+  color: var(--ink-muted);
+}
+
