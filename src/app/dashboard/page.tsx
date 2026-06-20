@@ -65,6 +65,7 @@ function DashboardContent() {
       setScrapeSteps([]);
       triggerScrape(urlParam);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // --- Scrape Action Trigger ---
@@ -411,6 +412,16 @@ function DashboardContent() {
     }, 500);
   };
 
+  const downloadAll = () => {
+    downloadJson();
+    setTimeout(() => {
+      downloadMarkdown();
+    }, 150);
+    setTimeout(() => {
+      downloadPdf();
+    }, 300);
+  };
+
   const handleCopy = () => {
     const text = aiContent[activeAiTab];
     if (text) {
@@ -714,6 +725,13 @@ function DashboardContent() {
                       className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
                     >
                       🖼️ PDF Spec Sheet
+                    </button>
+                    <div className="h-px bg-hair-soft my-1" />
+                    <button
+                      onClick={downloadAll}
+                      className="w-full text-left text-xs text-blue hover:text-blue-600 px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2 font-semibold"
+                    >
+                      📦 All Content (.pdf, .md, .json)
                     </button>
                   </div>
                 </div>

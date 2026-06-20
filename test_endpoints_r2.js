@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Using global fetch available in Node.js 18+
 const Database = require("better-sqlite3");
 const path = require("path");
