@@ -201,6 +201,215 @@ function DashboardContent() {
     a.click();
     URL.revokeObjectURL(url);
   };
+  const downloadJson = () => {
+    if (!business) return;
+    const exportData = {
+      extracted_at: new Date().toISOString(),
+      business_details: {
+        name: business.name,
+        handle: business.handle,
+        category: business.category,
+        bio: business.bio,
+        followers: business.followers,
+        following: business.following,
+        posts_count: business.posts_count,
+        contact: business.contact,
+        address: business.address,
+        website: business.website,
+        highlights: business.highlights
+      },
+      posts: business.posts.map(p => ({
+        date: p.date,
+        likes: p.likes,
+        caption: p.caption,
+        media_url: p.media_url,
+        media_type: p.media_type
+      })),
+      generated_website_content: {
+        homepage_copy: aiContent.copy || "",
+        services: aiContent.services || "",
+        faqs: aiContent.faqs || "",
+        seo_keywords: aiContent.seo || "",
+        testimonials: aiContent.testimonials || "",
+        google_business_profile: aiContent.gbp || ""
+      }
+    };
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${business.handle}-website-content.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadMarkdown = () => {
+    if (!business) return;
+
+    let md = `# Website Content Specification: ${business.name}\n\n`;
+    md += `Generated on ${new Date().toLocaleDateString()} via Grám.\n\n`;
+    
+    md += `## 📋 Business Details\n`;
+    md += `- **Handle:** @${business.handle}\n`;
+    md += `- **Category:** ${business.category}\n`;
+    md += `- **Followers:** ${business.followers}\n`;
+    md += `- **Contact:** ${business.contact}\n`;
+    md += `- **Address:** ${business.address}\n`;
+    md += `- **Website:** ${business.website || "N/A"}\n\n`;
+    
+    md += `### 📝 Biography\n\`\`\`\n${business.bio}\n\`\`\`\n\n`;
+
+    md += `---\n\n`;
+
+    md += `## 🏡 1. Homepage Copy & CTA\n\n`;
+    md += `${aiContent.copy || "(Not generated yet)"}\n\n`;
+
+    md += `## 📋 2. Services & Offerings\n\n`;
+    md += `${aiContent.services || "(Not generated yet)"}\n\n`;
+
+    md += `## ❓ 3. Frequently Asked Questions (FAQs)\n\n`;
+    md += `${aiContent.faqs || "(Not generated yet)"}\n\n`;
+
+    md += `## 🔍 4. SEO Keywords & Meta Copy\n\n`;
+    md += `${aiContent.seo || "(Not generated yet)"}\n\n`;
+
+    md += `## ⭐ 5. Customer Testimonials\n\n`;
+    md += `${aiContent.testimonials || "(Not generated yet)"}\n\n`;
+
+    md += `## 📍 6. Google Business Profile (GBP)\n\n`;
+    md += `${aiContent.gbp || "(Not generated yet)"}\n\n`;
+
+    md += `---\n\n`;
+    md += `## 📸 Extracted Instagram Posts\n\n`;
+    business.posts.forEach((p, i) => {
+      md += `### Post ${i + 1} (${p.date})\n`;
+      md += `- **Likes:** ${p.likes}\n`;
+      if (p.media_url) {
+        md += `- **Image URL:** ${p.media_url}\n`;
+      }
+      md += `> ${p.caption.replace(/\n/g, "\n> ")}\n\n`;
+    });
+
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${business.handle}-website-content.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadPdf = () => {
+    if (!business) return;
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Website Content Spec - ${business.name}</title>
+        <style>
+          body {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #111;
+            line-height: 1.5;
+            padding: 40px;
+            font-size: 14px;
+          }
+          h1 { font-size: 26px; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-bottom: 5px; }
+          h2 { font-size: 18px; color: #333; border-bottom: 1px solid #eaeaea; padding-bottom: 6px; margin-top: 30px; page-break-after: avoid; }
+          h3 { font-size: 14px; color: #555; margin-top: 20px; }
+          .metadata { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+          .metadata div { margin-bottom: 4px; }
+          .metadata strong { color: #555; }
+          .bio { white-space: pre-wrap; font-style: italic; color: #444; background: #fafafa; padding: 12px; border-radius: 6px; border-left: 3px solid #ddd; margin-bottom: 20px; }
+          .content-block { background: #fff; white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 13.5px; }
+          .post-grid { margin-top: 20px; }
+          .post-card { border: 1px solid #eee; padding: 12px; border-radius: 6px; margin-bottom: 12px; background: #fcfcfc; page-break-inside: avoid; }
+          .post-meta { font-size: 11px; color: #777; margin-bottom: 6px; }
+          .footer { margin-top: 50px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 15px; }
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Website Content Specification</h1>
+        <p style="font-size:12px; color:#666; margin-top:0;">Generated on ${new Date().toLocaleDateString()} via Grám</p>
+        
+        <div class="metadata">
+          <div><strong>Business Name:</strong> ${business.name}</div>
+          <div><strong>Instagram Handle:</strong> @${business.handle}</div>
+          <div><strong>Category:</strong> ${business.category}</div>
+          <div><strong>Followers:</strong> ${business.followers}</div>
+          <div><strong>Contact Info:</strong> ${business.contact}</div>
+          <div><strong>Address:</strong> ${business.address}</div>
+        </div>
+
+        <h2>Biography</h2>
+        <div class="bio">${business.bio}</div>
+
+        <h2>1. Homepage Copy & CTA</h2>
+        <div class="content-block">${aiContent.copy || "(Not generated yet)"}</div>
+
+        <h2>2. Services & Offerings</h2>
+        <div class="content-block">${aiContent.services || "(Not generated yet)"}</div>
+
+        <h2>3. Frequently Asked Questions (FAQs)</h2>
+        <div class="content-block">${aiContent.faqs || "(Not generated yet)"}</div>
+
+        <h2>4. SEO Keywords & Meta Copy</h2>
+        <div class="content-block">${aiContent.seo || "(Not generated yet)"}</div>
+
+        <h2>5. Customer Testimonials</h2>
+        <div class="content-block">${aiContent.testimonials || "(Not generated yet)"}</div>
+
+        <h2>6. Google Business Profile (GBP)</h2>
+        <div class="content-block">${aiContent.gbp || "(Not generated yet)"}</div>
+
+        <h2 style="page-break-before: always;">Extracted Instagram Feed Posts</h2>
+        <div class="post-grid">
+          ${business.posts.map((p, i) => `
+            <div class="post-card">
+              <div class="post-meta">Post ${i + 1} (${p.date}) · ${p.likes} likes</div>
+              <div style="font-size: 12.5px; color: #222;">${p.caption}</div>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="footer">
+          Generated using Grám Intelligence Website Content Builder. All rights reserved.
+        </div>
+      </body>
+      </html>
+    `;
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1000);
+    }, 500);
+  };
 
   const handleCopy = () => {
     const text = aiContent[activeAiTab];
@@ -474,12 +683,41 @@ function DashboardContent() {
                 >
                   {copiedTab === activeAiTab ? "✓ Copied" : "📋 Copy section"}
                 </button>
-                <button
-                  onClick={exportToSheets}
-                  className="bg-s2 text-ink border border-hair hover:bg-hair hover:border-hair-soft text-xs font-semibold px-4 py-2 rounded-lg"
-                >
-                  📥 Export CSV
-                </button>
+                
+                <div className="relative group">
+                  <button
+                    className="bg-s2 text-ink border border-hair hover:bg-hair hover:border-hair-soft text-xs font-semibold px-4 py-2 rounded-lg inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    📥 Export Formats
+                  </button>
+                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-s2 border border-hair rounded-xl shadow-xl p-1.5 min-w-[160px] z-50">
+                    <button
+                      onClick={exportToSheets}
+                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      📊 Excel / CSV
+                    </button>
+                    <button
+                      onClick={downloadJson}
+                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      📄 JSON Payload
+                    </button>
+                    <button
+                      onClick={downloadMarkdown}
+                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      📝 Markdown (.md)
+                    </button>
+                    <button
+                      onClick={downloadPdf}
+                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      🖼️ PDF Spec Sheet
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   onClick={generateAll}
                   className="bg-blue text-white font-semibold text-xs px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors ml-auto"
