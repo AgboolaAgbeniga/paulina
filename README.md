@@ -1,5 +1,7 @@
 # Grám - Instagram to Website in 5 Minutes
 
+**Live Demo:** [https://paulina-1ap1.vercel.app/](https://paulina-1ap1.vercel.app/)
+
 Grám is a modern, high-performance web application designed to instantly transform any public Instagram profile into a fully-fledged website package. It extracts posts, captions, contact info, and story highlights, and then uses AI (Claude) to generate polished website copy, SEO keywords, FAQs, and a Google Business Profile.
 
 ## 🚀 Features
