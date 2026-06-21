@@ -121,14 +121,14 @@ export default function Home() {
 
   // --- Data ---
   const tickerItems: TickerItem[] = [
-    { icon: "🎂", label: "<strong>@sugarcraft.ng</strong> — 6 posts extracted" },
-    { icon: "💇", label: "<strong>@glowbylara</strong> — homepage copy generated" },
-    { icon: "👗", label: "<strong>@fashionbykemi</strong> — SEO keywords ready" },
-    { icon: "🏋️", label: "<strong>@fitatfifty.ng</strong> — services page created" },
-    { icon: "🍔", label: "<strong>@burgerspot.abj</strong> — Google Business written" },
-    { icon: "📸", label: "<strong>@pixelstudio.ng</strong> — FAQs generated" },
-    { icon: "🌺", label: "<strong>@blossomevents</strong> — 12 posts extracted" },
-    { icon: "👠", label: "<strong>@zeehshoes</strong> — testimonials section done" },
+    { icon: "🎂", label: "<strong>@sugarcraft.ng</strong> - 6 posts extracted" },
+    { icon: "💇", label: "<strong>@glowbylara</strong> - homepage copy generated" },
+    { icon: "👗", label: "<strong>@fashionbykemi</strong> - SEO keywords ready" },
+    { icon: "🏋️", label: "<strong>@fitatfifty.ng</strong> - services page created" },
+    { icon: "🍔", label: "<strong>@burgerspot.abj</strong> - Google Business written" },
+    { icon: "📸", label: "<strong>@pixelstudio.ng</strong> - FAQs generated" },
+    { icon: "🌺", label: "<strong>@blossomevents</strong> - 12 posts extracted" },
+    { icon: "👠", label: "<strong>@zeehshoes</strong> - testimonials section done" },
   ];
 
   const doubledTickerItems = [...tickerItems, ...tickerItems];
@@ -212,7 +212,7 @@ export default function Home() {
           </h1>
 
           <p ref={(el) => addToReveals(el, "hero-sub")} className={`subhead max-w-[520px] mb-10 transition-all duration-700 delay-200 ${revealed["hero-sub"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"}`}>
-            Scrape any public Instagram profile. Extract posts, captions, contact info and highlights. Then let AI generate a complete website — copy, SEO, FAQs, and more.
+            Scrape any public Instagram profile. Extract posts, captions, contact info and highlights. Then let AI generate a complete website - copy, SEO, FAQs, and more.
           </p>
 
           <div ref={(el) => addToReveals(el, "hero-cta")} className={`flex items-center gap-3 flex-wrap mb-16 transition-all duration-700 delay-300 ${revealed["hero-cta"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"}`}>
@@ -241,7 +241,7 @@ export default function Home() {
               <span className="text-xs text-ink-muted mt-1">Businesses processed</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-2xl font-bold tracking-tight text-ink">{counts.time}–5 min</span>
+              <span className="text-2xl font-bold tracking-tight text-ink">{counts.time}-5 min</span>
               <span className="text-xs text-ink-muted mt-1">Per website build</span>
             </div>
             <div className="flex flex-col">
@@ -286,7 +286,7 @@ export default function Home() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a08af8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
               </div>
               <h3 className="text-lg font-semibold tracking-tight mb-2.5">Paste the Instagram URL</h3>
-              <p className="text-sm text-ink-muted leading-relaxed">Drop any public Instagram business profile link. Grám opens it, scrolls automatically, and collects everything — bio, posts, highlights, contact details.</p>
+              <p className="text-sm text-ink-muted leading-relaxed">Drop any public Instagram business profile link. Grám opens it, scrolls automatically, and collects everything - bio, posts, highlights, contact details.</p>
             </div>
 
             <div className="bg-s1 p-8 hover:bg-s2 transition-colors duration-200">
@@ -295,7 +295,7 @@ export default function Home() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e87ef7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               </div>
               <h3 className="text-lg font-semibold tracking-tight mb-2.5">We extract everything</h3>
-              <p className="text-sm text-ink-muted leading-relaxed">Business name, bio, address, phone number, all post captions, image URLs, highlights covers, and follower statistics — saved into one clean data package.</p>
+              <p className="text-sm text-ink-muted leading-relaxed">Business name, bio, address, phone number, all post captions, image URLs, highlights covers, and follower statistics - saved into one clean data package.</p>
             </div>
 
             <div className="bg-s1 p-8 hover:bg-s2 transition-colors duration-200">
@@ -328,7 +328,7 @@ export default function Home() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
               </div>
               <h3 className="text-lg font-semibold tracking-tight mb-2 text-white">Deep profile extraction</h3>
-              <p className="text-sm text-white/75 leading-relaxed mb-6">Bio, contact info, address, follower count, all post captions, image URLs, story highlights — captured in one pass with zero login needed.</p>
+              <p className="text-sm text-white/75 leading-relaxed mb-6">Bio, contact info, address, follower count, all post captions, image URLs, story highlights - captured in one pass with zero login needed.</p>
               <div className="flex flex-wrap gap-1.5">
                 {["Bio & contact", "All captions", "Highlights", "Post images"].map((tag) => (
                   <span key={tag} className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/12 text-white/85">{tag}</span>
@@ -341,7 +341,7 @@ export default function Home() {
               <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center mb-5">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
               </div>
-              <h3 className="text-lg font-semibold tracking-tight mb-2 text-white">AI website copy — 6 sections</h3>
+              <h3 className="text-lg font-semibold tracking-tight mb-2 text-white">AI website copy - 6 sections</h3>
               <p className="text-sm text-white/75 leading-relaxed mb-6">Claude AI reads every caption and generates homepage, services, FAQs, SEO keywords, testimonials, and Google Business Profile. Ready to paste into any website builder.</p>
               <div className="flex flex-wrap gap-1.5">
                 {["Homepage copy", "Service pages", "SEO keywords", "FAQs"].map((tag) => (
@@ -356,7 +356,7 @@ export default function Home() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
               </div>
               <h3 className="text-lg font-semibold tracking-tight mb-2">Export to Google Sheets</h3>
-              <p className="text-sm text-ink-muted leading-relaxed mb-6">Every extracted field — profile data, all captions, AI-generated copy — exported as a clean CSV or pushed directly to Google Sheets. Perfect for client handoffs.</p>
+              <p className="text-sm text-ink-muted leading-relaxed mb-6">Every extracted field - profile data, all captions, AI-generated copy - exported as a clean CSV or pushed directly to Google Sheets. Perfect for client handoffs.</p>
               <div className="flex flex-wrap gap-1.5">
                 {["CSV export", "Google Sheets"].map((tag) => (
                   <span key={tag} className="text-xs font-medium px-2.5 py-1 rounded-full bg-hair text-ink-muted">{tag}</span>
@@ -385,7 +385,7 @@ export default function Home() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight mb-2">Google Business Profile generator</h3>
-                <p className="text-sm text-ink-muted leading-relaxed">AI writes a keyword-optimised Google Business Profile description from the Instagram data — including 5 services to list and 3 post ideas. Built for Nigerian local SEO.</p>
+                <p className="text-sm text-ink-muted leading-relaxed">AI writes a keyword-optimised Google Business Profile description from the Instagram data - including 5 services to list and 3 post ideas. Built for Nigerian local SEO.</p>
               </div>
               <div className="bg-s2 rounded-xl p-5 border border-hair">
                 <div className="text-[11px] font-semibold text-ink-muted tracking-wider mb-3 uppercase">GBP preview</div>
@@ -532,7 +532,7 @@ export default function Home() {
               },
               {
                 stars: "★★★★★",
-                body: `"The AI-generated copy is surprisingly good. I clean it up slightly and send it to the client — they always think I spent days writing it. The SEO keywords section alone is worth the price."`,
+                body: `"The AI-generated copy is surprisingly good. I clean it up slightly and send it to the client - they always think I spent days writing it. The SEO keywords section alone is worth the price."`,
                 initials: "CE",
                 name: "Chioma Eze",
                 role: "Web designer · Abuja",
@@ -623,7 +623,7 @@ export default function Home() {
                 ))}
               </ul>
               <Link href="/dashboard" className="bg-white text-black font-medium text-sm py-2.5 rounded-full inline-flex justify-center transition-opacity hover:opacity-90">
-                Start Pro — ₦15k/mo
+                Start Pro - ₦15k/mo
               </Link>
               <span className="text-[11px] text-ink-muted text-center mt-3">7-day free trial · no credit card</span>
             </div>

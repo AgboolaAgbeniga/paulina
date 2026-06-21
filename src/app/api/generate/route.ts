@@ -47,9 +47,9 @@ Location: ${biz.address || "Nigeria"}
 Bio: ${biz.bio || ""}
 
 Provide:
-1. PRIMARY KEYWORDS (5) — high-intent search terms
-2. LONG-TAIL KEYWORDS (8) — specific search phrases
-3. LOCAL SEO KEYWORDS (5) — location-based terms
+1. PRIMARY KEYWORDS (5) - high-intent search terms
+2. LONG-TAIL KEYWORDS (8) - specific search phrases
+3. LOCAL SEO KEYWORDS (5) - location-based terms
 4. META TITLE (under 60 chars)
 5. META DESCRIPTION (under 155 chars)
 6. H1 TAG suggestion`,

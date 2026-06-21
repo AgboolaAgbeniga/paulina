@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Grám — Instagram to Website in 5 Minutes",
+  title: "Grám - Instagram to Website in 5 Minutes",
   description: "Scrape any public Instagram profile, extract posts, captions, contact info, and highlights. Use AI to generate website copy, SEO keywords, FAQs, and a Google Business Profile instantly.",
 };
 
