@@ -3,6 +3,32 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import JSZip from "jszip";
+
+// Helper to convert Markdown to basic formatted HTML for PDF generation
+function mdToHtml(md: string): string {
+  if (!md) return "";
+  let html = md;
+  // Escape HTML tags to prevent broken layout
+  html = html
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  // Headers
+  html = html.replace(/^### (.*?)$/gm, "<h3>$1</h3>");
+  html = html.replace(/^## (.*?)$/gm, "<h2>$1</h2>");
+  html = html.replace(/^# (.*?)$/gm, "<h1>$1</h1>");
+  // Bold text
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  // Bullet lists
+  html = html.replace(/^[-\*] (.*?)$/gm, "<div style='margin-left: 15px; margin-bottom: 4px;'>• $1</div>");
+  // Numbered lists
+  html = html.replace(/^\d+\. (.*?)$/gm, "<div style='margin-left: 15px; margin-bottom: 4px;'>$1</div>");
+  // Newlines
+  html = html.replace(/\n\n/g, "<br/><br/>");
+  html = html.replace(/\n/g, "<br/>");
+  return html;
+}
 
 // Types
 interface Post {
@@ -53,6 +79,20 @@ function DashboardContent() {
   const [loadingAi, setLoadingAi] = useState(false);
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [searchHistory, setSearchHistory] = useState<{ username: string; business_name: string; industry: string }[]>([]);
+  const [downloadingZip, setDownloadingZip] = useState(false);
+
+  // --- Fetch Search History ---
+  useEffect(() => {
+    if (phase === "input") {
+      fetch("/api/history")
+        .then(res => res.json())
+        .then(data => {
+          if (data.history) setSearchHistory(data.history);
+        })
+        .catch(err => console.error("Failed to fetch history:", err));
+    }
+  }, [phase]);
 
   // --- Auto-trigger via search param ---
   useEffect(() => {
@@ -108,8 +148,8 @@ function DashboardContent() {
       setAiContent({});
       setGenerationError(null);
       
-      // Auto generate copy using API
-      generateRealAiContent(data.business, "copy");
+      // Auto generate all copy sections in parallel
+      generateAll(data.business);
     } catch (err: any) {
       console.error("Scraping failed:", err.message);
       setScrapeSteps(prev => [
@@ -153,16 +193,86 @@ function DashboardContent() {
     }
   };
 
-  // --- Generate All Sections Handler ---
-  const generateAll = async () => {
-    if (!business) return;
+  // --- Generate All Sections Handler (Parallel) ---
+  const generateAll = async (biz: BusinessData = business!) => {
+    if (!biz) return;
     setLoadingAi(true);
-    for (const tab of AI_TABS) {
-      if (!aiContent[tab.id]) {
-        await generateRealAiContent(business, tab.id);
-      }
+    setGenerationError(null);
+    try {
+      await Promise.all(
+        AI_TABS.map(async (tab) => {
+          try {
+            const response = await fetch("/api/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ business: biz, tabId: tab.id })
+            });
+            const result = await response.json();
+            if (response.ok) {
+              setAiContent(prev => ({ ...prev, [tab.id]: result.text }));
+            }
+          } catch (err) {
+            console.error(`Failed to generate ${tab.id}:`, err);
+          }
+        })
+      );
+    } catch (err: any) {
+      setGenerationError(err.message || "Error generating sections.");
+    } finally {
+      setLoadingAi(false);
     }
-    setLoadingAi(false);
+  };
+
+  // --- Download all images as ZIP ---
+  const downloadImagesZip = async () => {
+    if (!business || !business.posts || business.posts.length === 0) return;
+    setDownloadingZip(true);
+    try {
+      const zip = new JSZip();
+      const imgFolder = zip.folder("images");
+      let count = 0;
+      for (let i = 0; i < business.posts.length; i++) {
+        const post = business.posts[i];
+        if (post.media_url) {
+          try {
+            const originUrl = post.media_url.startsWith("/") 
+              ? window.location.origin + post.media_url 
+              : post.media_url;
+            
+            // Route through CORS proxy image route to guarantee success
+            const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(originUrl)}`;
+            const res = await fetch(proxyUrl);
+            if (!res.ok) throw new Error("Fetch failed");
+            const blob = await res.blob();
+            
+            const contentType = res.headers.get("content-type") || "";
+            const ext = contentType.split("/")[1] || "jpg";
+            const filename = `${business.handle}_post_${i + 1}.${ext}`;
+            
+            imgFolder?.file(filename, blob);
+            count++;
+          } catch (e) {
+            console.error(`Failed to download image ${i + 1}:`, e);
+          }
+        }
+      }
+      if (count > 0) {
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${business.handle}-images.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        alert("No images could be fetched to ZIP.");
+      }
+    } catch (err: any) {
+      console.error("ZIP creation failed:", err);
+      alert("Failed to create ZIP: " + err.message);
+    } finally {
+      setDownloadingZip(false);
+    }
   };
 
   // --- Export CSV Handler ---
@@ -335,7 +445,7 @@ function DashboardContent() {
           .metadata div { margin-bottom: 4px; }
           .metadata strong { color: #555; }
           .bio { white-space: pre-wrap; font-style: italic; color: #444; background: #fafafa; padding: 12px; border-radius: 6px; border-left: 3px solid #ddd; margin-bottom: 20px; }
-          .content-block { background: #fff; white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 13.5px; }
+          .content-block { background: #fff; word-wrap: break-word; font-family: inherit; font-size: 13.5px; }
           .post-grid { margin-top: 20px; }
           .post-card { border: 1px solid #eee; padding: 12px; border-radius: 6px; margin-bottom: 12px; background: #fcfcfc; page-break-inside: avoid; }
           .post-meta { font-size: 11px; color: #777; margin-bottom: 6px; }
@@ -363,22 +473,22 @@ function DashboardContent() {
         <div class="bio">${business.bio}</div>
 
         <h2>1. Homepage Copy & CTA</h2>
-        <div class="content-block">${aiContent.copy || "(Not generated yet)"}</div>
+        <div class="content-block">${mdToHtml(aiContent.copy || "(Not generated yet)")}</div>
 
         <h2>2. Services & Offerings</h2>
-        <div class="content-block">${aiContent.services || "(Not generated yet)"}</div>
+        <div class="content-block">${mdToHtml(aiContent.services || "(Not generated yet)")}</div>
 
         <h2>3. Frequently Asked Questions (FAQs)</h2>
-        <div class="content-block">${aiContent.faqs || "(Not generated yet)"}</div>
+        <div class="content-block">${mdToHtml(aiContent.faqs || "(Not generated yet)")}</div>
 
         <h2>4. SEO Keywords & Meta Copy</h2>
-        <div class="content-block">${aiContent.seo || "(Not generated yet)"}</div>
+        <div class="content-block">${mdToHtml(aiContent.seo || "(Not generated yet)")}</div>
 
         <h2>5. Customer Testimonials</h2>
-        <div class="content-block">${aiContent.testimonials || "(Not generated yet)"}</div>
+        <div class="content-block">${mdToHtml(aiContent.testimonials || "(Not generated yet)")}</div>
 
         <h2>6. Google Business Profile (GBP)</h2>
-        <div class="content-block">${aiContent.gbp || "(Not generated yet)"}</div>
+        <div class="content-block">${mdToHtml(aiContent.gbp || "(Not generated yet)")}</div>
 
         <h2 style="page-break-before: always;">Extracted Instagram Feed Posts</h2>
         <div class="post-grid">
@@ -478,7 +588,34 @@ function DashboardContent() {
               </p>
             </div>
 
-
+            {searchHistory.length > 0 && (
+              <div className="bg-s1 border border-hair rounded-2xl p-6">
+                <h3 className="text-xs font-bold text-ink-muted tracking-wider uppercase mb-3.5">Recent Searches</h3>
+                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                  {searchHistory.map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setUrl(item.username);
+                        setPhase("scraping");
+                        setScrapeProgress(0);
+                        setScrapeSteps([]);
+                        triggerScrape(item.username);
+                      }}
+                      className="w-full text-left bg-s2 border border-hair-soft rounded-xl p-3 hover:bg-hair hover:border-hair-soft transition-all flex items-center justify-between group cursor-pointer"
+                    >
+                      <div>
+                        <div className="text-xs font-semibold text-ink group-hover:text-blue transition-colors">{item.business_name || item.username}</div>
+                        <div className="text-[10px] text-ink-muted mt-0.5">@{item.username} · {item.industry || "General Business"}</div>
+                      </div>
+                      <div className="text-[10px] text-ink-muted font-medium bg-s1 px-2.5 py-1 rounded-full border border-hair group-hover:text-ink group-hover:bg-s2 transition-colors">
+                        Load Spec →
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="bg-s1 border border-hair rounded-2xl p-6">
               <h3 className="text-xs font-bold text-ink-muted tracking-wider uppercase mb-4">What gets extracted</h3>
@@ -588,13 +725,28 @@ function DashboardContent() {
               <div className="bg-s1 border border-hair rounded-2xl p-6">
                 <span className="text-[11px] font-bold text-ink-muted tracking-wider uppercase block mb-4">Story Highlights</span>
                 <div className="flex gap-3.5 overflow-x-auto pb-2 scrollbar-thin">
-                  {business.highlights.map((hl, idx) => (
-                    <div key={idx} className="flex flex-col items-center flex-shrink-0 w-16 text-center">
-                      <div className="w-12 h-12 rounded-full border-2 border-hair flex items-center justify-center bg-s2 text-[10px] text-ink-muted font-medium p-1 leading-tight mb-1.5">
-                        {hl}
+                  {business.highlights.map((hl, idx) => {
+                    const postForHighlight = business.posts[idx % business.posts.length];
+                    const coverUrl = postForHighlight?.media_url;
+                    return (
+                      <div key={idx} className="flex flex-col items-center flex-shrink-0 w-16 text-center">
+                        <div className="w-13 h-13 rounded-full p-[2px] bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center mb-1.5 shadow-sm">
+                          <div className="w-full h-full rounded-full border border-canvas overflow-hidden bg-s2 flex items-center justify-center">
+                            {coverUrl ? (
+                              <img 
+                                src={coverUrl} 
+                                alt={hl} 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-[10px] text-ink-muted font-medium">{hl.substring(0, 3)}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-medium text-ink-muted truncate w-full">{hl}</span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -697,47 +849,57 @@ function DashboardContent() {
                 
                 <div className="relative group">
                   <button
-                    className="bg-s2 text-ink border border-hair hover:bg-hair hover:border-hair-soft text-xs font-semibold px-4 py-2 rounded-lg inline-flex items-center gap-1.5 cursor-pointer"
+                    disabled={loadingAi}
+                    className="bg-s2 text-ink border border-hair hover:bg-hair hover:border-hair-soft text-xs font-semibold px-4 py-2 rounded-lg inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    📥 Export Formats
+                    {loadingAi ? "⏳ Generating Copy..." : "📥 Export Formats"}
                   </button>
-                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-s2 border border-hair rounded-xl shadow-xl p-1.5 min-w-[160px] z-50">
-                    <button
-                      onClick={exportToSheets}
-                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      📊 Excel / CSV
-                    </button>
-                    <button
-                      onClick={downloadJson}
-                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      📄 JSON Payload
-                    </button>
-                    <button
-                      onClick={downloadMarkdown}
-                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      📝 Markdown (.md)
-                    </button>
-                    <button
-                      onClick={downloadPdf}
-                      className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      🖼️ PDF Spec Sheet
-                    </button>
-                    <div className="h-px bg-hair-soft my-1" />
-                    <button
-                      onClick={downloadAll}
-                      className="w-full text-left text-xs text-blue hover:text-blue-600 px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2 font-semibold"
-                    >
-                      📦 All Content (.pdf, .md, .json)
-                    </button>
-                  </div>
+                  {!loadingAi && (
+                    <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-s2 border border-hair rounded-xl shadow-xl p-1.5 min-w-[170px] z-50">
+                      <button
+                        onClick={exportToSheets}
+                        className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        📊 Excel / CSV
+                      </button>
+                      <button
+                        onClick={downloadImagesZip}
+                        disabled={downloadingZip}
+                        className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {downloadingZip ? "⚡ Packaging Zip..." : "🗂️ Images Pack (.zip)"}
+                      </button>
+                      <button
+                        onClick={downloadJson}
+                        className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        📄 JSON Payload
+                      </button>
+                      <button
+                        onClick={downloadMarkdown}
+                        className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        📝 Markdown (.md)
+                      </button>
+                      <button
+                        onClick={downloadPdf}
+                        className="w-full text-left text-xs text-ink-muted hover:text-ink px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        🖼️ PDF Spec Sheet
+                      </button>
+                      <div className="h-px bg-hair-soft my-1" />
+                      <button
+                        onClick={downloadAll}
+                        className="w-full text-left text-xs text-blue hover:text-blue-600 px-3 py-2 hover:bg-hair rounded-lg transition-colors flex items-center gap-2 font-semibold"
+                      >
+                        📦 All Content (.pdf, .md, .json)
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <button
-                  onClick={generateAll}
+                  onClick={() => generateAll()}
                   className="bg-blue text-white font-semibold text-xs px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors ml-auto"
                 >
                   🚀 Generate all copy
