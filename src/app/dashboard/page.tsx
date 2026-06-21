@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import JSZip from "jszip";
 
-// Helper to convert Markdown to basic formatted HTML for PDF generation
+// Helper to convert Markdown to basic formatted HTML for PDF generation and preview
 function mdToHtml(md: string): string {
   if (!md) return "";
   let html = md;
@@ -15,15 +15,15 @@ function mdToHtml(md: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   // Headers
-  html = html.replace(/^### (.*?)$/gm, "<h3>$1</h3>");
-  html = html.replace(/^## (.*?)$/gm, "<h2>$1</h2>");
-  html = html.replace(/^# (.*?)$/gm, "<h1>$1</h1>");
+  html = html.replace(/^### (.*?)$/gm, "<h3 class='text-sm font-bold mt-4 mb-2 text-white border-b border-hair pb-1'>$1</h3>");
+  html = html.replace(/^## (.*?)$/gm, "<h2 class='text-md font-bold mt-5 mb-2 text-white border-b border-hair pb-1'>$1</h2>");
+  html = html.replace(/^# (.*?)$/gm, "<h1 class='text-lg font-bold mt-6 mb-3 text-white border-b border-hair pb-1'>$1</h1>");
   // Bold text
-  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong class='font-bold text-white'>$1</strong>");
   // Bullet lists
-  html = html.replace(/^[-\*] (.*?)$/gm, "<div style='margin-left: 15px; margin-bottom: 4px;'>• $1</div>");
+  html = html.replace(/^[-\*] (.*?)$/gm, "<div style='margin-left: 15px; margin-bottom: 4px; opacity: 0.95;'>• $1</div>");
   // Numbered lists
-  html = html.replace(/^\d+\. (.*?)$/gm, "<div style='margin-left: 15px; margin-bottom: 4px;'>$1</div>");
+  html = html.replace(/^\d+\. (.*?)$/gm, "<div style='margin-left: 15px; margin-bottom: 4px; opacity: 0.95;'>$1</div>");
   // Newlines
   html = html.replace(/\n\n/g, "<br/><br/>");
   html = html.replace(/\n/g, "<br/>");
@@ -821,7 +821,7 @@ function DashboardContent() {
               </div>
 
               {/* AI Content Output */}
-              <div className="bg-s2 border border-hair-soft rounded-xl p-4.5 min-h-[160px] text-xs leading-relaxed whitespace-pre-wrap relative mb-4">
+              <div className="bg-s2 border border-hair-soft rounded-xl p-4.5 min-h-[160px] text-xs leading-relaxed relative mb-4">
                 {loadingAi ? (
                   <div className="text-ink-muted italic flex items-center gap-2">
                     <span className="animate-spin inline-block">⏳</span> Generating content details...
@@ -831,7 +831,10 @@ function DashboardContent() {
                     ❌ Error: {generationError}
                   </div>
                 ) : aiContent[activeAiTab] ? (
-                  <div className="text-ink text-[13px] leading-normal">{aiContent[activeAiTab]}</div>
+                  <div 
+                    className="text-ink text-[13px] leading-normal space-y-1.5"
+                    dangerouslySetInnerHTML={{ __html: mdToHtml(aiContent[activeAiTab]) }}
+                  />
                 ) : (
                   <div className="text-ink-muted text-center py-6">Click a tab to generate AI copy.</div>
                 )}
